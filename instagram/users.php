@@ -30,245 +30,245 @@
  * @filesource
  */
 
-namespace Instaphp\Instagram {
+namespace Instaphp\Instagram
+{
+  use Instaphp\Config;
+  use Instaphp\Request;
+  use Instaphp\Response;
 
-    use Instaphp\Config;
-    use Instaphp\Request;
-    use Instaphp\Response;
+  /**
+   * Users
+   * The Users class handles all users request to the API
+   * @package Instaphp
+   * @version 1.0
+   * @author randy sesser <randy@instagram.com>
+   */
+  class Users extends InstagramBase
+  {
 
-    /**
-     * Users
-     * The Users class handles all users request to the API
-     * @package Instaphp
-     * @version 1.0
-     * @author randy sesser <randy@instagram.com>
-     */
-    class Users extends InstagramBase
+    public function __construct($token = null)
     {
-
-        public function __construct($token = null)
-        {
-            parent::__construct($token);
-            $this->api_path = '/users';
-        }
-
-        /**
-         * Gets the access token from an oAuth request
-         * @access public
-         * @param string $code The authorization code returned by the oAuth call
-         * @param string $scope The scope of the oAuth request
-         * @return Response 
-         */
-        public function Authenticate($code, $scope = null)
-        {
-            if (!empty($code)) {
-                $this->AddParams(array(
-                    'code' => $code,
-                    'client_secret' => $this->config->Instagram->ClientSecret,
-                    'grant_type' => 'authorization_code',
-                    'redirect_uri' => $this->config->Instaphp->RedirectUri
-                ));
-
-                return $this->Post($this->config->GetOAuthTokenUri());
-            }
-        }
-
-        /**
-         * Gets info about a particular user
-         * @access public
-         * @param mixed $user_id A user ID or 'self' to get info about the currently authenticated user
-         * @return Response 
-         */
-        public function Info($user_id = 'self')
-        {
-            return $this->Get($this->buildUrl($user_id));
-        }
-
-        /**
-         * Gets a users feed
-         * @access public
-         * @param string $token An access token
-         * @param Array $params An associative array of key/value pairs to pass to the API.
-         * @return Response 
-         */
-        public function Feed(Array $params = array())
-        {
-            if (!empty($params))
-                $this->AddParams($params);
-
-            return $this->Get($this->buildUrl('self/feed/'));
-        }
-
-        /**
-         * Gets a user most recent media
-         * @access public
-         * @param mixed $user_id A user ID or 'self' to get info about the currently authenticated user
-         * @param Array $params An associative array of key/value pairs to pass to the API
-         * @return Response 
-         */
-        public function Recent($user_id, Array $params = array())
-        {
-            if (!empty($params))
-                $this->AddParams($params);
-
-            return $this->Get($this->buildUrl($user_id . '/media/recent/'));
-        }
-
-		/**
-		 * Gets media liked by the current user
-		 * @access public
-		 * @param Array $params An associative array of key/value pairs to pass to the API
-		 * @return Response
-		 */
-		public function Liked(Array $params = array())
-		{
-			if (!empty($params))
-				$this->AddParams($params);
-			return $this->Get($this->buildUrl('self/media/liked/'));
-		}
-
-        /**
-         * Search for a user by username
-         * @access public
-         * @param string $query A username
-         * @return Response 
-         */
-        public function Find($query = '')
-        {
-            $this->AddParam('q', $query);
-            return $this->Get($this->buildUrl('search'));
-        }
-
-        /**
-         * Gets followers of a particular user
-         * @access public
-         * @param mixed $user_id A user ID or 'self' to get info about the currently authenticated user
-         * @param Array $params Additional params to pass to the API
-         * @return Response 
-         */
-        public function Following($user_id, Array $params = array())
-        {
-            if (!empty($params))
-                $this->AddParams($params);
-            
-            return $this->Get($this->buildUrl($user_id . '/follows'));
-        }
-
-        /**
-         * Gets a user's followers
-         * @access public
-         * @param mixed $user_id A user ID or 'self' to get info about the currently authenticated user
-         * @param Array $params Additional params to pass to the API
-         * @return Response 
-         */
-        public function Followers($user_id, Array $params = array())
-        {
-            if (!empty($params))
-                $this->AddParams($params);
-
-            return $this->Get($this->buildUrl($user_id . '/followed-by'));
-        }
-
-        /**
-         * Gets requests for follows for a particular user
-         * @access public
-         * @param mixed $user_id A user ID or 'self' to get info about the currently authenticated user
-         * @return Response
-         */
-        public function Requests($user_id)
-        {
-	
-        }
-
-        /**
-         * Gets the relationship of a user based on the currently authenticated user
-         * @access public
-         * @param mixed $user_id A user ID or 'self' to get info about the currently authenticated user
-         * @return Response 
-         */
-        public function Relationship($user_id)
-        {
-            return $this->Get($this->buildUrl($user_id . '/relationship'));
-        }
-
-        /**
-         * Sets a relationship between a particular user and the currently authenticated user
-         * @access public
-         * @param int $user_id A user ID
-         * @param Array $token An associative array of key/value pairs to pass to the API
-         * @return Response 
-         */
-        protected function SetRelationship($user_id, $action)
-        {
-            $this->AddParam('action', $action);
-            return $this->Post($this->buildUrl($user_id . '/relationship'));
-        }
-        
-        /**
-         * Follow a user...
-         * @access public
-         * @param int $user_id A user ID
-         * @return Response
-         */
-        public function Follow($user_id)
-        {
-            return $this->SetRelationship($user_id, 'follow');
-        }
-        
-        /**
-         * Unfollow a user...
-         * @access public
-         * @param int $user_id A user ID
-         * @return Response
-         */
-        public function Unfollow($user_id)
-        {
-            return $this->SetRelationship($user_id, 'unfollow');
-        }
-        
-        /**
-         * Block a user...
-         * @access public
-         * @param int $user_id A user ID
-         * @return Response
-         */
-        public function Block($user_id)
-        {
-            return $this->SetRelationship($user_id, 'block');
-        }
-        
-        /**
-         * Unblock a user...
-         * @access public
-         * @param int $user_id A user ID
-         * @return Response
-         */
-        public function Unblock($user_id)
-        {
-            $this->SetRelationship($user_id, 'unblock');
-        }
-        
-        /**
-         * Approve a user request...
-         * @access public
-         * @param int $user_id A user ID
-         * @return Response
-         */
-        public function Approve($user_id)
-        {
-            $this->SetRelationship($user_id, 'approve');
-        }
-        
-        /**
-         * Deny a user request...
-         * @access public
-         * @param int $user_id A user ID
-         * @return Response
-         */
-        public function Deny($user_id)
-        {
-            $this->SetRelationship($user_id, 'deny');
-        }
+      parent::__construct($token);
+      $this->api_path = '/users';
     }
 
+    /**
+     * Gets the access token from an oAuth request
+     * @access public
+     * @param string $code The authorization code returned by the oAuth call
+     * @param string $scope The scope of the oAuth request
+     * @return Response 
+     */
+    public function Authenticate($code, $scope = null)
+    {
+      if (!empty($code))
+      {
+        $this->AddParams(array(
+            'code' => $code,
+            'client_secret' => $this->config->Instagram->ClientSecret,
+            'grant_type' => 'authorization_code',
+            'redirect_uri' => $this->config->Instaphp->RedirectUri
+        ));
+
+        return $this->Post($this->config->GetOAuthTokenUri());
+      }
+    }
+
+    /**
+     * Gets info about a particular user
+     * @access public
+     * @param mixed $user_id A user ID or 'self' to get info about the currently authenticated user
+     * @return Response 
+     */
+    public function Info($user_id = 'self')
+    {
+      return $this->Get($this->buildUrl($user_id));
+    }
+
+    /**
+     * Gets a users feed
+     * @access public
+     * @param string $token An access token
+     * @param Array $params An associative array of key/value pairs to pass to the API.
+     * @return Response 
+     */
+    public function Feed(Array $params = array())
+    {
+      if (!empty($params))
+        $this->AddParams($params);
+
+      return $this->Get($this->buildUrl('self/feed/'));
+    }
+
+    /**
+     * Gets a user most recent media
+     * @access public
+     * @param mixed $user_id A user ID or 'self' to get info about the currently authenticated user
+     * @param Array $params An associative array of key/value pairs to pass to the API
+     * @return Response 
+     */
+    public function Recent($user_id, Array $params = array())
+    {
+      if (!empty($params))
+        $this->AddParams($params);
+
+      return $this->Get($this->buildUrl($user_id . '/media/recent/'));
+    }
+
+    /**
+     * Gets media liked by the current user
+     * @access public
+     * @param Array $params An associative array of key/value pairs to pass to the API
+     * @return Response
+     */
+    public function Liked(Array $params = array())
+    {
+      if (!empty($params))
+        $this->AddParams($params);
+      return $this->Get($this->buildUrl('self/media/liked/'));
+    }
+
+    /**
+     * Search for a user by username
+     * @access public
+     * @param string $query A username
+     * @return Response 
+     */
+    public function Find($query = '')
+    {
+      $this->AddParam('q', $query);
+      return $this->Get($this->buildUrl('search'));
+    }
+
+    /**
+     * Gets followers of a particular user
+     * @access public
+     * @param mixed $user_id A user ID or 'self' to get info about the currently authenticated user
+     * @param Array $params Additional params to pass to the API
+     * @return Response 
+     */
+    public function Following($user_id, Array $params = array())
+    {
+      if (!empty($params))
+        $this->AddParams($params);
+
+      return $this->Get($this->buildUrl($user_id . '/follows'));
+    }
+
+    /**
+     * Gets a user's followers
+     * @access public
+     * @param mixed $user_id A user ID or 'self' to get info about the currently authenticated user
+     * @param Array $params Additional params to pass to the API
+     * @return Response 
+     */
+    public function Followers($user_id, Array $params = array())
+    {
+      if (!empty($params))
+        $this->AddParams($params);
+
+      return $this->Get($this->buildUrl($user_id . '/followed-by'));
+    }
+
+    /**
+     * Gets requests for follows for a particular user
+     * @access public
+     * @param mixed $user_id A user ID or 'self' to get info about the currently authenticated user
+     * @return Response
+     */
+    public function Requests($user_id)
+    {
+      
+    }
+
+    /**
+     * Gets the relationship of a user based on the currently authenticated user
+     * @access public
+     * @param mixed $user_id A user ID or 'self' to get info about the currently authenticated user
+     * @return Response 
+     */
+    public function Relationship($user_id)
+    {
+      return $this->Get($this->buildUrl($user_id . '/relationship'));
+    }
+
+    /**
+     * Sets a relationship between a particular user and the currently authenticated user
+     * @access public
+     * @param int $user_id A user ID
+     * @param Array $token An associative array of key/value pairs to pass to the API
+     * @return Response 
+     */
+    protected function SetRelationship($user_id, $action)
+    {
+      $this->AddParam('action', $action);
+      return $this->Post($this->buildUrl($user_id . '/relationship'));
+    }
+
+    /**
+     * Follow a user...
+     * @access public
+     * @param int $user_id A user ID
+     * @return Response
+     */
+    public function Follow($user_id)
+    {
+      return $this->SetRelationship($user_id, 'follow');
+    }
+
+    /**
+     * Unfollow a user...
+     * @access public
+     * @param int $user_id A user ID
+     * @return Response
+     */
+    public function Unfollow($user_id)
+    {
+      return $this->SetRelationship($user_id, 'unfollow');
+    }
+
+    /**
+     * Block a user...
+     * @access public
+     * @param int $user_id A user ID
+     * @return Response
+     */
+    public function Block($user_id)
+    {
+      return $this->SetRelationship($user_id, 'block');
+    }
+
+    /**
+     * Unblock a user...
+     * @access public
+     * @param int $user_id A user ID
+     * @return Response
+     */
+    public function Unblock($user_id)
+    {
+      $this->SetRelationship($user_id, 'unblock');
+    }
+
+    /**
+     * Approve a user request...
+     * @access public
+     * @param int $user_id A user ID
+     * @return Response
+     */
+    public function Approve($user_id)
+    {
+      $this->SetRelationship($user_id, 'approve');
+    }
+
+    /**
+     * Deny a user request...
+     * @access public
+     * @param int $user_id A user ID
+     * @return Response
+     */
+    public function Deny($user_id)
+    {
+      $this->SetRelationship($user_id, 'deny');
+    }
+  }
 }

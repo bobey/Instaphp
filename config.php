@@ -30,116 +30,113 @@
  * @filesource
  */
 
-namespace Instaphp {
+namespace Instaphp
+{
+  use \SimpleXMLElement;
 
-    use \SimpleXMLElement;
+  /**
+   * The Instaphp version. We pass this to Instagram as part of the User-Agent
+   */
+  define('INSTAPHP_VERSION', '1.0');
+
+  /**
+   * Our Config class which extends the SimpleXMLElement class
+   * See {inline @link http://php.net/simplexmlelement SimplXMLElement}
+   * @package Instaphp
+   * @version 1.0
+   * @author randy sesser <randy@instaphp.com>
+   */
+  class Config extends SimpleXMLElement
+  {
 
     /**
-     * The Instaphp version. We pass this to Instagram as part of the User-Agent
+     * A static instance property for creating an instance of the Config object
+     * @var Instaphp\Config
+     * @access private
      */
-    define('INSTAPHP_VERSION', '1.0');
+    private static $_instance = null;
+    /**
+     * The path to the config.xml file
+     * @var string
+     * @access private
+     */
+    private static $file = null;
 
     /**
-     * Our Config class which extends the SimpleXMLElement class
-     * See {inline @link http://php.net/simplexmlelement SimplXMLElement}
-     * @package Instaphp
-     * @version 1.0
-     * @author randy sesser <randy@instaphp.com>
+     * Singleton method since the SimpleXMLElement class is essentially "sealed"
+     * @return Config An instance of the Config object
      */
-    class Config extends SimpleXMLElement
+    public static function Instance()
     {
+      if (static::$file == null)
+        static::$file = realpath(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'config.xml';
 
-        /**
-         * A static instance property for creating an instance of the Config object
-         * @var Instaphp\Config
-         * @access private
-         */
-        private static $_instance = null;
-        /**
-         * The path to the config.xml file
-         * @var string
-         * @access private
-         */
-        private static $file = null;
+      if (!file_exists(static::$file))
+      {
+        trigger_error("No configuration found for Instaphp. Using sample file!", E_USER_WARNING);
+        static::$file = realpath(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'config.sample.xml';
+      }
 
-        /**
-         * Singleton method since the SimpleXMLElement class is essentially "sealed"
-         * @return Config An instance of the Config object
-         */
-        public static function Instance()
-        {
-            if (static::$file == null)
-                static::$file = realpath(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'config.xml';
+      if (null == static::$_instance)
+        static::$_instance = new self(static::$file, null, true);
 
-            if (!file_exists(static::$file)) {
-                trigger_error("No configuration found for Instaphp. Using sample file!", E_USER_WARNING);
-				static::$file = realpath(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'config.sample.xml';
-			}
-
-            if (null == static::$_instance)
-                static::$_instance = new self(static::$file, null, true);
-
-            return static::$_instance;
-        }
-
-        /**
-         * A convenience method to build the OAuth URL to authenticate a user.
-         * the value in the config.xml file should contain some "tokens" that
-         * are replaced with other values in the config.
-         * @access public
-         * @return string The OAuth URL used to authenticate a user
-         */
-        public function GetOAuthUri()
-        {
-            if (!isset($this->Instagram))
-                return null;
-
-            $path = $this->Instagram->OAuthPath;
-            $path = str_replace("{ClientId}", $this->Instagram->ClientId, $path);
-            $path = str_replace("{RedirectUri}", $this->Instaphp->RedirectUri, $path);
-
-            if (!empty($this->Instagram->Scope))
-                $path .= '&scope=' . $this->Instagram->Scope;
-
-            return $this->Instagram->Endpoint . $path;
-        }
-
-        /**
-         * A convenience method to build the OAuth URL used to retreive an access token
-         * @return string The URL used to retrieve the access token
-         */
-        public function GetOAuthTokenUri()
-        {
-            if (!isset($this->Instagram))
-                return null;
-
-            return $this->Instagram->Endpoint . $this->Instagram->OAuthTokenPath;
-        }
-		
-		public function CacheSetting($name, $key)
-		{
-			$cache = $this->xpath("//Instaphp/Cache[@Engine='File']");
-			if (empty($cache) || count($cache) == 0)
-				return null;
-			
-			$cache = $cache[0];
-			
-			return $cache->Settings->Setting[$key];
-			
-		}
-
-        public function GetSection($section = null, \SimpleXMLElement $parent = null)
-        {
-            if (empty($section))
-                return null;
-
-            if (null !== $parent)
-                return $parent->xpath($section);
-            
-            return $this->xpath($section);
-        }
-
+      return static::$_instance;
     }
 
-}
+    /**
+     * A convenience method to build the OAuth URL to authenticate a user.
+     * the value in the config.xml file should contain some "tokens" that
+     * are replaced with other values in the config.
+     * @access public
+     * @return string The OAuth URL used to authenticate a user
+     */
+    public function GetOAuthUri()
+    {
+      if (!isset($this->Instagram))
+        return null;
 
+      $path = $this->Instagram->OAuthPath;
+      $path = str_replace("{ClientId}", $this->Instagram->ClientId, $path);
+      $path = str_replace("{RedirectUri}", $this->Instaphp->RedirectUri, $path);
+
+      if (!empty($this->Instagram->Scope))
+        $path .= '&scope=' . $this->Instagram->Scope;
+
+      return $this->Instagram->Endpoint . $path;
+    }
+
+    /**
+     * A convenience method to build the OAuth URL used to retreive an access token
+     * @return string The URL used to retrieve the access token
+     */
+    public function GetOAuthTokenUri()
+    {
+      if (!isset($this->Instagram))
+        return null;
+
+      return $this->Instagram->Endpoint . $this->Instagram->OAuthTokenPath;
+    }
+
+    public function CacheSetting($name, $key)
+    {
+      $cache = $this->xpath("//Instaphp/Cache[@Engine='File']");
+      if (empty($cache) || count($cache) == 0)
+        return null;
+
+      $cache = $cache[0];
+
+      return $cache->Settings->Setting[$key];
+    }
+
+    public function GetSection($section = null, \SimpleXMLElement $parent = null)
+    {
+      if (empty($section))
+        return null;
+
+      if (null !== $parent)
+        return $parent->xpath($section);
+
+      return $this->xpath($section);
+    }
+  }
+}

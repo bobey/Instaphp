@@ -30,72 +30,69 @@
  * @filesource
  */
 
-namespace Instaphp\Instagram {
+namespace Instaphp\Instagram
+{
+  use Instaphp\Config;
+  use Instaphp\Request;
+  use Instaphp\Response;
 
-    use Instaphp\Config;
-    use Instaphp\Request;
-    use Instaphp\Response;
-
-    /**
-     * Tags
-     * The Tags class handles all tag based API calls
-     * @package Instaphp
-     * @version 1.0
-     * @author randy sesser <randy@instaphp.com>
-     */
-    class Tags extends InstagramBase
+  /**
+   * Tags
+   * The Tags class handles all tag based API calls
+   * @package Instaphp
+   * @version 1.0
+   * @author randy sesser <randy@instaphp.com>
+   */
+  class Tags extends InstagramBase
+  {
+    public function __construct($token = null)
     {
-
-        public function __construct($token = null)
-        {
-            parent::__construct($token);
-            $this->api_path = '/tags';
-        }
-
-        /**
-         * Gets infor about a particular tag
-         * @access public
-         * @param string $tag A tag name
-         * @param string $token An access token
-         * @return Response 
-         */
-        public function Info($tag = mull)
-        {
-            if (empty($tag))
-                trigger_error("You didn't supply a tag, not sure what whill happen here...", E_USER_WARNING);
-
-            return $this->Get($this->buildUrl($tag));
-        }
-
-        /**
-         * Gets recent media tagged with $tag
-         * @access public
-         * @param string $tag A tag name
-         * @param string $token An access token
-         * @param Array $params An associative array of key/value pairs to pass to the API
-         * @return Response 
-         */
-        public function Recent($tag, Array $params = array())
-        {
-			if (!empty($params))
-				$this->AddParams($params);
-
-            return $this->Get($this->buildUrl($tag . '/media/recent'));
-        }
-
-        /**
-         * Searches for media by tag
-         * @access public
-         * @param string $query
-         * @param string $token
-         * @return Response 
-         */
-        public function Search($query = '')
-        {
-            $this->AddParam('q', $query);
-            return $this->Get($this->buildUrl('search'));
-        }
-
+      parent::__construct($token);
+      $this->api_path = '/tags';
     }
 
+    /**
+     * Gets infor about a particular tag
+     * @access public
+     * @param string $tag A tag name
+     * @param string $token An access token
+     * @return Response 
+     */
+    public function Info($tag = mull)
+    {
+      if (empty($tag))
+        trigger_error("You didn't supply a tag, not sure what whill happen here...", E_USER_WARNING);
+
+      return $this->Get($this->buildUrl($tag));
+    }
+
+    /**
+     * Gets recent media tagged with $tag
+     * @access public
+     * @param string $tag A tag name
+     * @param string $token An access token
+     * @param Array $params An associative array of key/value pairs to pass to the API
+     * @return Response 
+     */
+    public function Recent($tag, Array $params = array())
+    {
+      if (!empty($params))
+        $this->AddParams($params);
+
+      return $this->Get($this->buildUrl($tag . '/media/recent'));
+    }
+
+    /**
+     * Searches for media by tag
+     * @access public
+     * @param string $query
+     * @param string $token
+     * @return Response 
+     */
+    public function Search($query = '')
+    {
+      $this->AddParam('q', $query);
+      return $this->Get($this->buildUrl('search'));
+    }
+  }
 }
